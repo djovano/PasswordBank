@@ -1,35 +1,32 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react';
+import PasswordForm from './components/PasswordForm';
+import PasswordList from './components/PasswordList';
+import { listarSenhas } from './api';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [senhas, setSenhas] = useState([]);
+
+  // Carrega senhas ao abrir
+  const carregar = async () => {
+    const { data } = await listarSenhas();
+    setSenhas(data);
+  };
+
+  useEffect(() => {
+    carregar();
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div style={{ fontFamily: 'Arial', padding: 24 }}> 
+      <h1>Banco de Senhas</h1>
 
-export default App
+      {/* Formulário de cadastro */}
+      <PasswordForm onSaved={carregar} />
+
+      <hr style={{ margin: '24px 0' }} />
+
+      {/* Lista de senhas */}
+      <PasswordList senhas={senhas} />
+    </div>
+  );
+}

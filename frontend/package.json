@@ -3,13 +3,17 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+  "main": "electron/main.cjs",
+ "scripts": {
+  "dev": "vite",
+  "build": "vite build",
+  "start": "electron .",
+  "preview": "vite preview",
+  "lint": "eslint ."
   },
+
   "dependencies": {
+    "axios": "^1.10.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
