@@ -1,46 +1,87 @@
-import { useState } from 'react';
-import { salvarSenha } from '../api';
+import { useEffect, useState } from 'react';
+import { salvarSenha, editarSenha, excluirSenha } from '../api';
 
-export default function PasswordForm({ onSaved }) {
+export default function PasswordForm({ onSaved, senhaSelecionada, limparSelecao }) {
   const [nome, setNome] = useState('');
   const [usuario, setUsuario] = useState('');
   const [senha, setSenha] = useState('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!nome || !usuario || !senha) return alert('Preencha todos os campos!');
+  // Preenche o formulário quando uma senha for selecionada para edição
+  useEffect(() => {
+    if (senhaSelecionada) {
+      setNome(senhaSelecionada.nome);
+      setUsuario(senhaSelecionada.usuario);
+      setSenha(''); // não exibimos a senha original por segurança
+    } else {
+      setNome('');
+      setUsuario('');
+      setSenha('');
+    }
+  }, [senhaSelecionada]);
 
-    await salvarSenha({
+  const salvar = async () => {
+    const dados = {
       nome,
       usuario,
-      senhaCriptografada: senha   
-    });
+      senhaCriptografada: senha,
+    };
 
-    setNome('');
-    setUsuario('');
-    setSenha('');
-    onSaved();                    
+    try {
+      if (senhaSelecionada) {
+        await editarSenha(senhaSelecionada.id, dados);
+      } else {
+        await salvarSenha(dados);
+      }
+
+      onSaved();
+      limparSelecao();
+    } catch (err) {
+      console.error('Erro ao salvar:', err);
+      alert('Erro ao salvar a entrada.');
+    }
+  };
+
+  const excluir = async () => {
+    if (senhaSelecionada && confirm('Deseja mesmo excluir esta entrada?')) {
+      try {
+        await excluirSenha(senhaSelecionada.id);
+        onSaved();
+        limparSelecao();
+      } catch (err) {
+        console.error('Erro ao excluir:', err);
+        alert('Erro ao excluir a entrada.');
+      }
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 8 }}>
+    <div className="formulario">
+      <h3>{senhaSelecionada ? 'Editar Entrada' : 'Nova Entrada'}</h3>
+
       <input
-        placeholder="Serviço"
+        type="text"
+        placeholder="Nome"
         value={nome}
         onChange={(e) => setNome(e.target.value)}
       />
       <input
+        type="text"
         placeholder="Usuário"
         value={usuario}
         onChange={(e) => setUsuario(e.target.value)}
       />
       <input
-        placeholder="Senha"
         type="password"
+        placeholder="Senha"
         value={senha}
         onChange={(e) => setSenha(e.target.value)}
       />
-      <button type="submit">Salvar</button>
-    </form>
+
+      <div style={{ marginTop: 12 }}>
+        <button onClick={salvar}>Salvar</button>
+        {senhaSelecionada && <button onClick={excluir} style={{ marginLeft: 8 }}>Excluir</button>}
+        {senhaSelecionada && <button onClick={limparSelecao} style={{ marginLeft: 8 }}>Cancelar</button>}
+      </div>
+    </div>
   );
 }

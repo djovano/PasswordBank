@@ -6,63 +6,76 @@ import './App.css';
 
 export default function App() {
   const [senhas, setSenhas] = useState([]);
+  const [senhaSelecionada, setSenhaSelecionada] = useState(null);
+  const [bloqueado, setBloqueado] = useState(true);
+  const [senhaMestre, setSenhaMestre] = useState('');
 
-  const [senhaDigitada, setSenhaDigitada] = useState('');
-  const [desbloqueado, setDesbloqueado] = useState(false);
-
-  const SENHA_MESTRE = '1234';
+  const senhaCorreta = '1234'; // exemplo, pode vir do backend futuramente
 
   const carregar = async () => {
-    const { data } = await listarSenhas();
-    setSenhas(data);
+    try {
+      const { data } = await listarSenhas();
+      setSenhas(data);
+    } catch (err) {
+      console.error('Erro ao carregar senhas:', err);
+    }
   };
 
   useEffect(() => {
-    if (desbloqueado) carregar();
-  }, [desbloqueado]);
+    if (!bloqueado) {
+      carregar();
+    }
+  }, [bloqueado]);
 
-  const tentarDesbloquear = () => {
-    if (senhaDigitada === SENHA_MESTRE) {
-      setDesbloqueado(true);
-      setSenhaDigitada('');
+  const desbloquear = () => {
+    if (senhaMestre === senhaCorreta) {
+      setBloqueado(false);
     } else {
-      alert('Senha incorreta!');
+      alert('Senha incorreta');
     }
   };
 
   const bloquear = () => {
-    setDesbloqueado(false);
+    setBloqueado(true);
+    setSenhaMestre('');
+    setSenhaSelecionada(null);
     setSenhas([]);
-    setSenhaDigitada('');
   };
 
-  if (!desbloqueado) {
-    return (
-      <div className="bloqueio">
-        <h2>🔒 Digite a senha mestre</h2>
-        <input
-          type="password"
-          value={senhaDigitada}
-          onChange={(e) => setSenhaDigitada(e.target.value)}
-          placeholder="Senha mestre"
-        />
-        <button onClick={tentarDesbloquear}>Desbloquear</button>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ fontFamily: 'Arial', padding: 24 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>Banco de Senhas</h1>
-        <button onClick={bloquear}>🔒 Bloquear</button>
-      </div>
+    <div className="container">
+      <h1>Banco de Senhas</h1>
 
-      <PasswordForm onSaved={carregar} />
+      {bloqueado ? (
+        <div className="bloqueado">
+          <input
+            type="password"
+            placeholder="Digite a senha mestre"
+            value={senhaMestre}
+            onChange={(e) => setSenhaMestre(e.target.value)}
+          />
+          <button onClick={desbloquear}>Desbloquear</button>
+        </div>
+      ) : (
+        <>
+          <div style={{ textAlign: 'right', marginBottom: 16 }}>
+            <button onClick={bloquear}>🔒 Bloquear Banco</button>
+          </div>
 
-      <hr style={{ margin: '24px 0' }} />
+          <PasswordForm
+            onSaved={carregar}
+            senhaSelecionada={senhaSelecionada}
+            limparSelecao={() => setSenhaSelecionada(null)}
+          />
 
-      <PasswordList senhas={senhas} onSaved={carregar} />
+          <hr style={{ margin: '24px 0' }} />
+
+          <PasswordList
+            senhas={senhas}
+            onSelecionar={(senha) => setSenhaSelecionada(senha)}
+          />
+        </>
+      )}
     </div>
   );
 }
