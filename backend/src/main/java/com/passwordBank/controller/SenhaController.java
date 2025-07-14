@@ -33,4 +33,17 @@ public class SenhaController {
         }
         return senhas;
     }
+
+    @PutMapping("/{id}")
+    public Senha atualizar(@PathVariable Long id, @RequestBody Senha senha) throws Exception {
+        senha.setId(id);
+        senha.setSenhaCriptografada(crypto.criptografar(senha.getSenhaCriptografada()));
+        return repo.save(senha);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deletar(@PathVariable Long id) {
+        repo.deleteById(id);
+    }
+
 }

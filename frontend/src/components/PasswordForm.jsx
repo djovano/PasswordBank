@@ -13,13 +13,13 @@ export default function PasswordForm({ onSaved }) {
     await salvarSenha({
       nome,
       usuario,
-      senhaCriptografada: senha   // o backend criptografa
+      senhaCriptografada: senha   
     });
 
     setNome('');
     setUsuario('');
     setSenha('');
-    onSaved();                    // recarrega lista
+    onSaved();                    
   };
 
   return (
